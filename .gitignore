@@ -1,0 +1,21 @@
+# Node/React
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+npm-debug.log*
+
+# Java/Spring Boot
+backend/target/
+backend/bin/
+backend/.settings/
+backend/.classpath
+backend/.project
+*.jar
+*.war
+
+# IDEs and OS Files
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
