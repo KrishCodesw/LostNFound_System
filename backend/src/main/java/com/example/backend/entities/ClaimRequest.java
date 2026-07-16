@@ -8,12 +8,12 @@ public class ClaimRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManytoOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @ManytoOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = claimant_id)
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "claimant_id")
     private User claimant;
 
     @Column(columnDefinition = "TEXT")
