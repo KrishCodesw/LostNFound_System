@@ -1,5 +1,4 @@
-package com.example.backend.repositories;
-import com.example.backend.entities.Category;
+package com.example.backend.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
