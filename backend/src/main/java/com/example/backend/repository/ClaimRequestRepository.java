@@ -1,6 +1,6 @@
-package com.example.backend.repositories;
+package com.example.backend.repository;
 
-import com.example.backend.entities.ClaimRequest;
+import com.example.backend.entity.ClaimRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
