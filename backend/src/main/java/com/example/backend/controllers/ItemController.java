@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins="http://localhost:5173")
 public class ItemController {
 
-    public ItemController(ItemService itemService){
-        this.itemService=itemService;
-    }
+//    public ItemController(ItemService itemService){
+//        this.itemService=itemService;
+//    }
 //
 //    @PostMapping("/report")
 //    public ResponseEntity<Item> reportItem(@RequestBody Item item){
