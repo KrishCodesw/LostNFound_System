@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ItemRepository extends JpaRepository {
+public interface ItemRepository extends JpaRepository <Item,Long> {
     List<Item> findByType(String type);
     List<Item> findByTypeAndCategoryAndDescriptionContainingIgnoreCase(String type, Long categoryId, String keyword);
     List<Item> findByStatus(String status);
