@@ -6,6 +6,7 @@ import com.example.backend.repositories.ItemRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ItemService {
@@ -22,5 +23,21 @@ public class ItemService {
         return (Item) itemRepository.save(item);
     }
 
+    public List<Item> findSuggestedMatches(Item lostItem){
+        if(lostItem.getCategory()==null||lostItem.getDescription()==null){
+            return List.of();
+        }
+        String[] words=lostItem.getDescription().split("\\s+");
+        String primaryKeyword="";
+
+        for(String word:words){
+            if(word.length()>3){
+                primaryKeyword=word;
+                break;
+            }
+        }
+        //query for FOUND items in the same category containing the keyword
+        return itemRepository.findByTypeAndCategoryAndDescriptionContainingIgnoreCase("FOUND",lostItem.getCategory().getId(),primaryKeyword);
+    }
 
 }
