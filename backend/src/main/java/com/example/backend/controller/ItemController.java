@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.ItemResponse;
 import com.example.backend.entity.Item;
 import com.example.backend.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<Item> getAllItems() {
+    public List<ItemResponse> getAllItems() {
         return itemService.getAllItems();
     }
 
