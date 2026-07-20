@@ -27,3 +27,5 @@ public class User {
 
 
 }
+
+// ENUM for ROLE as well, is a good option !
