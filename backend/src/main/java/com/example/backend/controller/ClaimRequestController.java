@@ -1,11 +1,12 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.ClaimResponse;
+import com.example.backend.dto.ClaimSubmitRequest;
 import com.example.backend.entity.ClaimRequest;
 import com.example.backend.service.ClaimRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/claims")
@@ -16,18 +17,13 @@ public class ClaimRequestController {
     private ClaimRequestService claimRequestService;
 
     @PostMapping
-    private ClaimRequest submitClaim(@RequestBody ClaimRequest claimRequest){
-        return claimRequestService.submitClaim(claimRequest);
-    }
-
-    @GetMapping
-    public List<ClaimRequest> getAllClaims(){
-        return claimRequestService.getAllClaims();
+    public ResponseEntity<ClaimResponse> submitClaim(@RequestBody ClaimSubmitRequest request) {
+        return ResponseEntity.ok(claimRequestService.submitClaim(request));
     }
 
     @PutMapping("/{id}/status")
-    public ClaimRequest updateClaimStatus(@PathVariable Long id,@RequestParam String status){
-        return claimRequestService.updateClaimStatus(id,status);
+    public ResponseEntity<ClaimResponse> updateStatus(@PathVariable Long id, @RequestParam String status) {
+        return ResponseEntity.ok(claimRequestService.updateClaimStatus(id, status));
     }
 
 }
