@@ -1,5 +1,5 @@
 package com.example.backend.controller;
-
+import java.security.Principal;
 import com.example.backend.dto.ItemRequest;
 import com.example.backend.dto.ItemResponse;
 import com.example.backend.entity.Item;
@@ -20,8 +20,15 @@ public class ItemController {
     private ItemService itemService;
 
     @PostMapping
-    public ResponseEntity<ItemResponse> addItem(@RequestBody ItemRequest itemrequest) {
-        return ResponseEntity.ok(itemService.reportItem(itemrequest));
+    public ResponseEntity<ItemResponse> addItem(
+            @RequestBody ItemRequest itemrequest,
+            java.security.Principal principal) {
+
+        // Extract the email from the verified JWT token
+        String userEmail = principal.getName();
+
+        // Pass both the request and the email to the service
+        return ResponseEntity.ok(itemService.reportItem(itemrequest,userEmail));
     }
 
     @GetMapping
