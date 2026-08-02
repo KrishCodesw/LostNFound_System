@@ -22,25 +22,36 @@ public class ClaimRequestService {
     @Autowired
     private UserRepository userRepository;
 
-    public ClaimResponse submitClaim(ClaimSubmitRequest request) {
-        ClaimRequest claim = new ClaimRequest();
+    public ClaimResponse submitClaim(ClaimSubmitRequest request, String userEmail) {
 
+        // 1. Securely fetch the user (the claimer) using the token's email
+        User claimer = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        // 2. Fetch the item they are trying to claim
         Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new RuntimeException("Item not found"));
-        User claimant = userRepository.findById(request.getClaimantId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // 3. Build the claim entity
+        ClaimRequest claim = new ClaimRequest();
         claim.setItem(item);
-        claim.setClaimant(claimant);
+        claim.setClaimant(claimer);
         claim.setProofDescription(request.getProofDescription());
-        claim.setStatus("PENDING");
+        claim.setStatus("PENDING"); // Default status for new claims
 
-        // Update item status
-        item.setStatus("CLAIM_PENDING");
-        itemRepository.save(item);
-
+        // 4. Save to the database
         ClaimRequest savedClaim = claimRequestRepository.save(claim);
-        return mapToResponse(savedClaim);
+
+        // 5. Map to your response DTO
+        ClaimResponse response = new ClaimResponse();
+        response.setId(savedClaim.getId());
+        response.setItemTitle(savedClaim.getItem().getTitle());
+        response.setClaimantName(savedClaim.getClaimant().getName());
+        response.setProofDescription(savedClaim.getProofDescription());
+        response.setStatus(savedClaim.getStatus());
+        // ... map any other fields
+
+        return response;
     }
 
     public ClaimResponse updateClaimStatus(Long id, String newStatus) {
