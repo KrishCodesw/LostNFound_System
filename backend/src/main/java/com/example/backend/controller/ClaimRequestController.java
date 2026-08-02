@@ -1,5 +1,7 @@
 package com.example.backend.controller;
 import java.security.Principal;
+import java.util.Map;
+
 import com.example.backend.dto.ClaimResponse;
 import com.example.backend.dto.ClaimSubmitRequest;
 import com.example.backend.entity.ClaimRequest;
@@ -29,7 +31,8 @@ public class ClaimRequestController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<ClaimResponse> updateStatus(@PathVariable Long id, @RequestParam String status) {
+    public ResponseEntity<ClaimResponse> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+        String status = requestBody.get("status");
         return ResponseEntity.ok(claimRequestService.updateClaimStatus(id, status));
     }
 
