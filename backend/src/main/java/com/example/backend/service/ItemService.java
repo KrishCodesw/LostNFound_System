@@ -18,39 +18,60 @@ import java.util.stream.Collectors;
 public class ItemService {
 
     @Autowired
-    private ItemRepository itemRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private ItemRepository itemRepository;
 
+    public ItemResponse reportItem(ItemRequest request, String userEmail) {
 
-    // Add Item
-    public ItemResponse reportItem(ItemRequest request){
-        Item item=new Item();
-        item.setType(request.getType());
-        item.setTitle(request.getTitle());
-        item.setDescription(request.getDescription());
-        item.setImageUrl(request.getImageUrl());
-        item.setLocation(request.getLocation());
-        item.setDateReported(LocalDateTime.now());
-        item.setStatus("OPEN");
+        // 1. Securely fetch the user using the email from the token
+        User reporter = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found in database"));
 
-        Category category=categoryRepository.findById(request.getCategoryId())
+        // 2. Fetch the category (assuming your ItemRequest has a categoryId)
+        Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        User user = userRepository.findById(request.getReporterId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        // 3. Build the Item entity
+        Item item = new Item();
+        item.setTitle(request.getTitle());
+        item.setDescription(request.getDescription());
+        item.setLocation(request.getLocation());
+        item.setType(request.getType()); // e.g., "LOST" or "FOUND"
         item.setCategory(category);
-        item.setReportedBy(user);
 
+        // 4. Bind the securely fetched user
+        item.setReportedBy(reporter);
+
+        // 5. Save and return
+        // 5. Save the item to the database
         Item savedItem = itemRepository.save(item);
-        return mapToResponse(savedItem);
-    }
 
+        // 6. Map the saved entity to your ItemResponse DTO
+        ItemResponse response = new ItemResponse();
+        response.setId(savedItem.getId());
+        response.setType(savedItem.getType());
+        response.setTitle(savedItem.getTitle());
+        response.setDescription(savedItem.getDescription());
+        response.setImageUrl(savedItem.getImageUrl());
+        response.setDateReported(savedItem.getDateReported());
+        response.setLocation(savedItem.getLocation());
+        response.setStatus(savedItem.getStatus());
+
+        // Extract the nested names from the related entities
+        if (savedItem.getReportedBy() != null) {
+            response.setReporterName(savedItem.getReportedBy().getName());
+        }
+        if (savedItem.getCategory() != null) {
+            response.setCategoryName(savedItem.getCategory().getName());
+        }
+
+        return response;
+    }
     // Get All Items
     public List<ItemResponse> getAllItems() {
         return itemRepository.findAll().stream()
