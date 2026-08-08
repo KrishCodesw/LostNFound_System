@@ -1,5 +1,98 @@
+@import url("https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --color-harbor-DEFAULT: #1e40af;
+  --color-paper: #f4efe3;
+  --color-paper-raised: #fbf8f1;
+  --color-ink: #1a1a16;
+  --color-stone: #d9d0b8;
+  --color-stone-dim: #eae3d0;
+
+  /* Collegiate palette — deliberately not soft/pastel */
+  --color-navy: #1f3a5f;      /* Found */
+  --color-navy-tint: #dee6ee;
+
+  --color-crimson: #7a1e2b;   /* Lost */
+  --color-crimson-tint: #f1dfdc;
+
+  --color-forest: #3f5d3a;    /* Resolved / approved */
+  --color-forest-tint: #e1e8dc;
+
+  --color-brass: #a9812e;     /* Institutional accent / focus */
+  --color-brass-tint: #f1e7cc;
+
+  --color-admin-bg: #121210;
+  --color-admin-panel: #1c1b17;
+  --color-admin-line: #33322b;
+  --color-admin-brass: #c9a227;
+
+  --font-display: "Zilla Slab", "Georgia", serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --radius-card: 3px;
+  --radius-control: 2px;
+
+  --shadow-hard: 3px 3px 0 0 rgba(26, 26, 22, 0.85);
+  --shadow-hard-sm: 2px 2px 0 0 rgba(26, 26, 22, 0.85);
+}
+
+@layer base {
+  html {
+    scroll-behavior: auto; /* Lenis takes over */
+  }
+  body {
+    @apply bg-paper text-ink font-body antialiased;
+    background-image:
+      linear-gradient(rgba(26, 26, 22, 0.05) 1px, transparent 1px);
+    background-size: 100% 28px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Registrar ledger rule lines — used behind the feed only, kept faint */
+  .ledger-bg {
+    background-image: linear-gradient(rgba(26, 26, 22, 0.055) 1px, transparent 1px);
+    background-size: 100% 32px;
+  }
+
+  /* Rubber-stamp overlay used for RESOLVED / APPROVED / REJECTED marks */
+  .stamp {
+    border: 2.5px solid currentColor;
+    border-radius: 2px;
+    padding: 2px 10px;
+    transform: rotate(-7deg);
+    letter-spacing: 0.12em;
+    position: relative;
+  }
+  .stamp::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid currentColor;
+    border-radius: 1px;
+    opacity: 0.55;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Hard-shadow press interaction for buttons and pinned controls */
+  .press-shadow {
+    box-shadow: var(--shadow-hard-sm);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .press-shadow:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
 }

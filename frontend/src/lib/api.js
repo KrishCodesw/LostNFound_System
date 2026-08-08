@@ -52,6 +52,10 @@ export const claimsApi = {
   submit: (payload) => api.post("/claims", payload).then((r) => r.data),
   updateStatus: (id, status) =>
     api.put(`/claims/${id}/status`, null, { params: { status } }).then((r) => r.data),
+  // NOTE: the backend does not currently expose a GET /claims listing
+  // endpoint (see backend analysis) — this call is wired for when it's
+  // added. AdminDashboard falls back to empty state if it 404s.
+  list: () => api.get("/claims").then((r) => r.data),
 };
 
 // ---- Auth ---------------------------------------------------------------

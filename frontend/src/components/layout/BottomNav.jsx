@@ -4,16 +4,16 @@ import { LayoutGrid, PlusCircle, ClipboardList, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { to: "/", label: "Feed", icon: LayoutGrid, end: true },
+  { to: "/", label: "Registry", icon: LayoutGrid, end: true },
   { to: "/report", label: "Report", icon: PlusCircle },
-  { to: "/claims", label: "My Claims", icon: ClipboardList },
+  { to: "/claims", label: "Claims", icon: ClipboardList },
   { to: "/profile", label: "Profile", icon: User },
 ];
 
 export default function BottomNav() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-stone bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-paper-raised pb-[env(safe-area-inset-bottom)] sm:hidden"
       aria-label="Primary"
     >
       <ul className="grid grid-cols-4">
@@ -24,19 +24,21 @@ export default function BottomNav() {
               end={end}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium",
-                  isActive ? "text-harbor" : "text-ink/45"
+                  "relative flex flex-col items-center gap-1 py-2.5 font-mono text-[10px] uppercase tracking-wide",
+                  isActive ? "text-ink" : "text-ink/40"
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <motion.span
-                    animate={{ scale: isActive ? 1.08 : 1, y: isActive ? -1 : 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  >
-                    <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 1.8} />
-                  </motion.span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="bottom-nav-indicator"
+                      className="absolute top-0 h-[3px] w-8 bg-brass"
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  <Icon className="h-5 w-5" strokeWidth={isActive ? 2.2 : 1.6} />
                   {label}
                 </>
               )}
