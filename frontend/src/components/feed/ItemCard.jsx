@@ -1,78 +1,79 @@
+import React from "react";
 import { motion } from "framer-motion";
-import { MapPin, ImageOff } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { StampMark } from "@/components/ui/badge";
-import { cn, formatRelativeTime, ticketNumber } from "@/lib/utils";
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
-};
-
-export default function ItemCard({ item }) {
+export default function ItemCard({ item, index }) {
   const navigate = useNavigate();
-  const isResolved = item.status === "RESOLVED";
-  const isLost = String(item.type).toUpperCase() !== "FOUND";
+
+  const formatTime = (dateString) => {
+    if (!dateString) return "Unknown time";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+  };
 
   return (
-    <motion.article
-      variants={cardVariants}
-      whileTap={{ scale: 0.985 }}
-      onClick={() => navigate(`/items/${item.id}`)}
-      className="group cursor-pointer overflow-hidden rounded-[3px] border border-ink/70 bg-paper-raised"
-      style={{ boxShadow: "3px 3px 0 0 rgba(26,26,22,0.18)" }}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, delay: index * 0.05 }}
+      onClick={() => navigate(`/item/${item.id}`)}
+      className="flex gap-4 p-4 bg-white border-b border-black cursor-pointer hover:bg-neutral-50 active:bg-neutral-100 transition-colors"
     >
-      {/* colored registry stripe — read Lost/Found at a glance, like a
-          library card catalog's colored edge */}
-      <div className={cn("h-[6px] w-full", isLost ? "bg-crimson" : "bg-navy")} />
-
-      <div className="relative h-40 w-full overflow-hidden bg-stone-dim sm:h-44">
+      {/* Image Thumbnail */}
+      <div className="w-24 h-24 shrink-0 bg-neutral-100 border border-black overflow-hidden flex items-center justify-center">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
             alt={item.title}
+            className="object-cover w-full h-full"
             loading="lazy"
-            className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-ink/25">
-            <ImageOff className="h-8 w-8" />
-          </div>
-        )}
-
-        {isResolved && (
-          <div className="absolute inset-0 flex items-center justify-center bg-paper/70">
-            <StampMark tone="forest">Closed</StampMark>
-          </div>
+          <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+            No Image
+          </span>
         )}
       </div>
 
-      <div className="space-y-2 border-t border-ink/10 p-4">
-        <div className="flex items-center justify-between font-mono text-[10.5px] uppercase tracking-wider text-ink/45">
-          <span>Case {ticketNumber(item.id)}</span>
-          <span>{formatRelativeTime(item.dateReported)}</span>
-        </div>
-
-        <h3 className="line-clamp-1 font-display text-lg font-semibold text-ink">
-          {item.title}
-        </h3>
-
-        <p className="line-clamp-2 text-sm leading-snug text-ink/60">
-          {item.description}
-        </p>
-
-        <div className="flex items-center justify-between border-t border-dashed border-ink/15 pt-2">
-          <div className="flex items-center gap-1 text-xs text-ink/50">
-            <MapPin className="h-3.5 w-3.5" />
-            <span className="line-clamp-1">{item.location || "Unknown location"}</span>
-          </div>
-          {item.categoryName && (
-            <span className="shrink-0 font-mono text-[10.5px] uppercase tracking-wider text-ink/40">
+      {/* Item Details */}
+      <div className="flex flex-col flex-grow justify-between py-1 overflow-hidden">
+        <div>
+          <div className="flex justify-between items-start mb-1">
+            <Badge
+              className={`rounded-none border border-black px-2 py-0.5 text-[10px] font-bold uppercase ${
+                item.type === "LOST"
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
+            >
+              {item.type}
+            </Badge>
+            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">
               {item.categoryName}
             </span>
-          )}
+          </div>
+          <h3 className="font-black text-lg leading-tight truncate">
+            {item.title}
+          </h3>
+        </div>
+
+        <div className="space-y-1 mt-2">
+          <p className="text-xs font-medium text-neutral-600 flex items-center gap-1.5 truncate">
+            <MapPin size={14} className="shrink-0" /> {item.location}
+          </p>
+          <p className="text-xs font-medium text-neutral-600 flex items-center gap-1.5">
+            <Clock size={14} className="shrink-0" />{" "}
+            {formatTime(item.dateReported)}
+          </p>
         </div>
       </div>
-    </motion.article>
+    </motion.div>
   );
 }

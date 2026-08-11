@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2, Mail, Lock, User, Check } from "lucide-react";
-import { authApi } from "@/lib/api";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState(null);
@@ -28,11 +29,11 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await authApi.register(form);
+      await register(form);
       navigate("/login");
-    } catch {
+    } catch (err) {
       setServerError(
-        "Couldn't create your account. This email may already be registered, or the backend rejected the request."
+        err.message || "Couldn't create your account. This email may already be registered, or the backend rejected the request."
       );
     } finally {
       setLoading(false);
@@ -113,7 +114,7 @@ export default function RegisterPage() {
         {serverError && <FieldError>{serverError}</FieldError>}
 
         <Button type="submit" disabled={loading} className="mt-2 w-full">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? "Creating account…" : "Create account"}
         </Button>
       </form>

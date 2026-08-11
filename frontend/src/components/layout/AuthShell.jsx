@@ -14,7 +14,9 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/45">
           {eyebrow}
         </p>
-        <h1 className="mt-1 font-display text-2xl font-bold text-ink">{title}</h1>
+        <h1 className="mt-1 font-display text-2xl font-bold text-ink">
+          {title}
+        </h1>
         {subtitle && <p className="mt-2 text-sm text-ink/55">{subtitle}</p>}
 
         <div className="mt-7">{children}</div>

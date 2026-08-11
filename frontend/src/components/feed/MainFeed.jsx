@@ -1,179 +1,211 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+// frontend/src/pages/student/Feed.jsx
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { itemsApi } from "@/lib/api";
+import { Search, MapPin, Clock, Filter, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useLenis } from "@/hooks/useLenis";
-import ItemCard from "./ItemCard";
-import { ItemCardSkeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
-const FILTERS = [
-  { key: "ALL", label: "All records" },
-  { key: "LOST", label: "Lost" },
-  { key: "FOUND", label: "Found" },
-];
+export default function Feed() {
+  useLenis(); // Smooth scrolling init
 
-const PAGE_SIZE = 12;
-
-const gridVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
-
-export default function MainFeed() {
-  useLenis();
-
+  const [activeTab, setActiveTab] = useState("ALL");
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("ALL");
-  const [query, setQuery] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const sentinelRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
+  // Fetch items from Spring Boot backend
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    itemsApi
-      .list()
-      .then((data) => {
-        if (!cancelled) setItems(Array.isArray(data) ? data : []);
-      })
-      .catch(() => {
-        if (!cancelled) setError("Couldn't load the registry. Pull down to try again.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
+    const fetchItems = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Calls your ItemController.java mapping
+        const data = await apiFetch("/items");
+        setItems(data);
+      } catch (err) {
+        setError("Failed to load items. Please check your connection.");
+      } finally {
+        setIsLoading(false);
+      }
     };
+
+    fetchItems();
   }, []);
 
-  const filtered = useMemo(() => {
-    return items.filter((item) => {
-      const matchesType = filter === "ALL" || item.type === filter;
-      const matchesQuery =
-        !query.trim() ||
-        `${item.title} ${item.description} ${item.location}`
-          .toLowerCase()
-          .includes(query.trim().toLowerCase());
-      return matchesType && matchesQuery;
-    });
-  }, [items, filter, query]);
+  // Client-side filtering based on Tab and Search Input
+  const filteredItems = items.filter((item) => {
+    const matchesTab = activeTab === "ALL" || item.type === activeTab;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
-  const visible = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
-
-  useEffect(() => {
-    if (!sentinelRef.current || !hasMore) return undefined;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) setVisibleCount((c) => c + PAGE_SIZE);
-      },
-      { rootMargin: "400px" }
-    );
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [hasMore]);
+  // Helper to format Java LocalDateTime to a readable format
+  const formatTime = (dateString) => {
+    if (!dateString) return "Unknown time";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+  };
 
   return (
-    <div className="ledger-bg min-h-screen">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-16 lg:px-8">
-        <header className="mb-6 border-b-2 border-ink pb-4">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/45">
-            Office of Campus Security · Lost &amp; Found Registry
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink sm:text-4xl">
-            Item Registry
-          </h1>
-        </header>
-
-        {/* Search + filters */}
-        <div className="sticky top-0 z-20 -mx-4 mb-6 border-b border-ink/15 bg-paper/95 px-4 pb-4 pt-3 backdrop-blur sm:mx-0 sm:px-0">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search item, place, description…"
-                className="h-11 w-full rounded-[2px] border border-ink/70 bg-paper-raised pl-9 pr-4 text-sm text-ink placeholder:text-ink/35 focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/30"
-              />
-            </div>
-            <button
-              type="button"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[2px] border border-ink/70 bg-paper-raised text-ink/60"
-              aria-label="Filters"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={cn(
-                  "shrink-0 rounded-[2px] border px-4 py-2 font-mono text-xs uppercase tracking-wide transition-colors",
-                  filter === f.key
-                    ? "border-ink bg-ink text-paper"
-                    : "border-ink/30 bg-paper-raised text-ink/55"
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+    <div className="min-h-screen bg-white pb-24 font-sans text-neutral-900">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 px-4 py-4 backdrop-blur-md">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold tracking-tight">Campus Recovery</h1>
+          <button className="p-2 border border-neutral-200 rounded-full hover:bg-neutral-50 transition-colors">
+            <Filter size={18} />
+          </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative flex items-center w-full mb-4">
+          <Search className="absolute left-3 text-neutral-400" size={18} />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-neutral-100 border-none pl-10 rounded-xl h-12 focus-visible:ring-1 focus-visible:ring-black"
+            placeholder="Search items..."
+          />
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-2">
+          {["ALL", "LOST", "FOUND"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-2 text-xs font-bold tracking-wider rounded-lg border transition-all ${
+                activeTab === tab
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-neutral-500 border-neutral-200"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main>
+        {/* Error State */}
         {error && (
-          <div className="mb-6 rounded-[2px] border border-crimson bg-crimson-tint p-4 text-sm text-crimson">
-            {error}
+          <div className="p-4 m-4 bg-red-50 border border-red-200 text-red-600 rounded-lg flex items-start gap-3">
+            <AlertCircle size={20} className="shrink-0 mt-0.5" />
+            <p className="text-sm font-medium">{error}</p>
           </div>
         )}
 
-        {loading && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <ItemCardSkeleton key={i} />
+        {/* Loading Skeletons */}
+        {isLoading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y border-b border-neutral-200 md:divide-y-0 md:gap-px md:bg-neutral-200">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className="flex gap-4 p-4 bg-white animate-pulse">
+                <div className="w-24 h-24 shrink-0 bg-neutral-200 rounded-lg"></div>
+                <div className="flex flex-col flex-grow py-1 space-y-3">
+                  <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
+                  <div className="h-5 bg-neutral-200 rounded w-3/4"></div>
+                  <div className="mt-auto space-y-2">
+                    <div className="h-3 bg-neutral-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-neutral-200 rounded w-1/3"></div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
 
-        {!loading && !error && filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-[3px] border border-dashed border-ink/30 py-20 text-center">
-            <p className="font-display text-xl font-semibold text-ink/70">
-              No matching records
+        {/* Empty State */}
+        {!isLoading && !error && filteredItems.length === 0 && (
+          <div className="flex flex-col items-center justify-center p-12 text-center text-neutral-500">
+            <Search
+              size={48}
+              className="mb-4 text-neutral-300"
+              strokeWidth={1}
+            />
+            <p className="text-lg font-semibold text-neutral-900">
+              No items found
             </p>
-            <p className="mt-1 max-w-xs text-sm text-ink/45">
-              Nothing matches this search yet. Try a different filter, or be the first to
-              log an item.
+            <p className="text-sm">
+              Try adjusting your filters or search term.
             </p>
           </div>
         )}
 
-        {!loading && !error && filtered.length > 0 && (
-          <motion.div
-            variants={gridVariants}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            <AnimatePresence mode="popLayout">
-              {visible.map((item) => (
-                <ItemCard key={item.id} item={item} />
+        {/* Real Item Grid */}
+        {!isLoading && !error && filteredItems.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y border-b border-neutral-200 md:divide-y-0 md:gap-px md:bg-neutral-200">
+            <AnimatePresence>
+              {filteredItems.map((item, index) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2, delay: index * 0.05 }}
+                  key={item.id}
+                  className="flex gap-4 p-4 bg-white hover:bg-neutral-50 cursor-pointer transition-colors"
+                >
+                  {/* Image Thumbnail */}
+                  <div className="w-24 h-24 shrink-0 bg-neutral-100 rounded-lg border border-neutral-200 overflow-hidden flex items-center justify-center">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="object-cover w-full h-full"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+                        No Image
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Item Details */}
+                  <div className="flex flex-col flex-grow justify-between py-1 overflow-hidden">
+                    <div>
+                      <div className="flex justify-between items-start mb-1">
+                        <Badge
+                          className={`${item.type === "LOST" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"} rounded-sm border-none shadow-none px-2 py-0.5 text-[10px]`}
+                        >
+                          {item.type}
+                        </Badge>
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                          {item.categoryName}
+                        </span>
+                      </div>
+                      <h3 className="font-semibold text-base leading-tight truncate pr-2">
+                        {item.title}
+                      </h3>
+                    </div>
+
+                    <div className="space-y-1 mt-2">
+                      <p className="text-xs text-neutral-500 flex items-center gap-1.5 truncate">
+                        <MapPin size={12} className="shrink-0" />{" "}
+                        {item.location}
+                      </p>
+                      <p className="text-xs text-neutral-500 flex items-center gap-1.5">
+                        <Clock size={12} className="shrink-0" />{" "}
+                        {formatTime(item.dateReported)}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
             </AnimatePresence>
-          </motion.div>
+          </div>
         )}
-
-        {hasMore && <div ref={sentinelRef} className="h-10" />}
-      </div>
+      </main>
     </div>
   );
 }

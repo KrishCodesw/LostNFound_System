@@ -5,9 +5,11 @@ import { authApi } from "@/lib/api";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
@@ -18,17 +20,16 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      // NOTE: backend does not expose POST /auth/login yet — this call
-      // will 404 until that endpoint is added (see backend analysis).
-      const data = await authApi.login(form);
+      const data = await login(form);
       if (data?.token) {
-        localStorage.setItem("lnf_token", data.token);
-        navigate("/");
+        localStorage.setItem("jwt_token", data.token);
+        // Determine role from token (login function already sets user in context)
+        navigate("/", { replace: true });
       } else {
-        setError("Login endpoint didn't return a token. Backend needs /auth/login implemented.");
+        setError("Login failed: no token received.");
       }
-    } catch {
-      setError("Couldn't sign in. Check your credentials, or confirm /auth/login exists on the backend.");
+    } catch (err) {
+      setError(err.message || "Couldn't sign in. Check your credentials.");
     } finally {
       setLoading(false);
     }

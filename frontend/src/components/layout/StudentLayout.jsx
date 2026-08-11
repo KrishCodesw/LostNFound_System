@@ -16,13 +16,23 @@ export default function StudentLayout() {
             </span>
           </Link>
           <nav className="flex items-center gap-6 font-mono text-xs uppercase tracking-wide text-ink/55">
-            <NavLink to="/" end className={({ isActive }) => (isActive ? "text-ink" : "")}>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => (isActive ? "text-ink" : "")}
+            >
               Registry
             </NavLink>
-            <NavLink to="/claims" className={({ isActive }) => (isActive ? "text-ink" : "")}>
+            <NavLink
+              to="/claims"
+              className={({ isActive }) => (isActive ? "text-ink" : "")}
+            >
               My Claims
             </NavLink>
-            <NavLink to="/profile" className={({ isActive }) => (isActive ? "text-ink" : "")}>
+            <NavLink
+              to="/profile"
+              className={({ isActive }) => (isActive ? "text-ink" : "")}
+            >
               Profile
             </NavLink>
           </nav>
