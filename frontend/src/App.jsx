@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { PrivateRoute } from "@/components/layout/PrivateRoute";
 
 import StudentLayout from "@/components/layout/StudentLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -26,13 +25,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       {/* Student — mobile-first, bottom-tab shell */}
-      <Route
-        element={
-          <PrivateRoute requiredRole="student">
-            <StudentLayout />
-          </PrivateRoute>
-        }
-      >
+      <Route element={<StudentLayout />}>
         <Route path="/" element={<FeedPage />} />
         <Route path="/items/:id" element={<ItemDetailPage />} />
         <Route path="/report" element={<ReportItemPage />} />
@@ -41,13 +34,7 @@ export default function App() {
       </Route>
 
       {/* Admin — desktop-optimized, brutalist console */}
-      <Route
-        element={
-          <PrivateRoute requiredRole="admin">
-            <AdminLayout />
-          </PrivateRoute>
-        }
-      >
+      <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboardPage />} />
         <Route path="claims" element={<AdminClaimsPage />} />
         <Route path="items" element={<AdminItemsPage />} />
