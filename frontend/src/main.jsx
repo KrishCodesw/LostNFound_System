@@ -9,11 +9,11 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <ErrorBoundary>
+      <ErrorBoundary>
+        <AuthProvider>
           <App />
-        </ErrorBoundary>
-      </AuthProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   </StrictMode>
 );
