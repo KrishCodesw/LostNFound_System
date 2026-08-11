@@ -16,7 +16,7 @@ export default function RegisterPage() {
   function validate() {
     const next = {};
     if (!form.name.trim()) next.name = "Enter your full name.";
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = "Enter a valid email.";
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "Enter a valid email.";
     if (form.password.length < 8) next.password = "At least 8 characters.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -28,7 +28,13 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await register(form);
+      // Trim the fields before sending
+      const trimmedData = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password.trim()
+      };
+      await register(trimmedData);
       // register function handles navigation to login
     } catch (err) {
       setServerError(

@@ -18,8 +18,12 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login(form);
-      // login function handles navigation and setting token
+      // Trim the fields
+      const trimmedData = {
+        email: form.email.trim(),
+        password: form.password.trim(),
+      };
+      await login(trimmedData);
     } catch (err) {
       setError(err.message || "Couldn't sign in. Check your credentials.");
     } finally {
@@ -54,7 +58,9 @@ export default function LoginPage() {
               placeholder="you@institute.edu"
               className="pl-10"
               value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, email: e.target.value }))
+              }
             />
           </div>
         </div>
@@ -71,7 +77,9 @@ export default function LoginPage() {
               placeholder="••••••••"
               className="pl-10 pr-10"
               value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, password: e.target.value }))
+              }
             />
             <button
               type="button"
@@ -79,7 +87,11 @@ export default function LoginPage() {
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/35"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>

@@ -15,14 +15,21 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('jwt_token');
     if (token) {
       try {
+        // Check token format
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          throw new Error('Invalid token format');
+        }
         // Decode JWT (payload is second part)
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const { email, exp } = payload;
+        const payload = JSON.parse(atob(parts[1]));
+        // The backend uses 'sub' for email in the token
+        const email = payload.sub || payload.email;
         if (!email) {
           throw new Error('Token missing email');
         }
         // Check if token expired
-        if (Date.now() >= exp * 1000) {
+        const exp = payload.exp;
+        if (!exp || Date.now() >= exp * 1000) {
           throw new Error('Token expired');
         }
         // Determine role based on email (simple heuristic)
