@@ -1,5 +1,8 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 const LINKS = [
   { to: "/admin", label: "Overview", end: true },
@@ -9,6 +12,8 @@ const LINKS = [
 ];
 
 export default function AdminLayout() {
+  const { logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-admin-bg text-white">
       <div className="flex">
@@ -36,6 +41,18 @@ export default function AdminLayout() {
               </NavLink>
             ))}
           </nav>
+          {/* Logout button at bottom of aside */}
+          <div className="mt-auto p-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="w-full"
+            >
+              Log out
+              <LogOut className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </aside>
 
         <main className="min-w-0 flex-1">

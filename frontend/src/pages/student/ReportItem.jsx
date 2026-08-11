@@ -87,7 +87,7 @@ export default function ReportItemPage() {
     try {
       // NOTE: backend ItemController currently expects reporterId in the body
       // rather than deriving it from the JWT — swap this once that's fixed.
-      await itemsApi.create({
+      await itemsApi.reportItem({
         type: form.type,
         title: form.title.trim(),
         description: form.description.trim(),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Loader2, Mail, Lock, User, Check } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Input, Label, FieldError } from "@/components/ui/input";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const { register } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -30,7 +29,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(form);
-      navigate("/login");
+      // register function handles navigation to login
     } catch (err) {
       setServerError(
         err.message || "Couldn't create your account. This email may already be registered, or the backend rejected the request."

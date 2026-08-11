@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { claimsApi } from "@/lib/api";
-import { Button } from "@/components/ui/button";
 
 export default function AdminClaimsPage() {
   const [claims, setClaims] = useState([]);
@@ -27,20 +26,12 @@ export default function AdminClaimsPage() {
     };
   }, []);
 
-  // No delete action for claims maybe
-
   if (loading) return <div className="p-8">Loading claims...</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">Claims</h1>
-        <Button variant="outline" size="sm">
-          {/* Placeholder for exporting */}
-          Export
-        </Button>
-      </div>
+      <h1 className="text-2xl font-semibold">Claims</h1>
 
       {claims.length === 0 ? (
         <p className="text-center text-muted-foreground">No claims found.</p>
@@ -53,7 +44,6 @@ export default function AdminClaimsPage() {
               <th className="text-left p-3">Claimant</th>
               <th className="text-left p-3">Status</th>
               <th className="text-left p-3">Filed At</th>
-              <th className="text-left p-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -68,19 +58,6 @@ export default function AdminClaimsPage() {
                   </span>
                 </td>
                 <td className="p-3 text-sm">{new Date(claim.submittedAt ?? Date.now()).toLocaleString()}</td>
-                <td className="p-3 text-sm">
-                  {/* If pending, show buttons to approve/reject */}
-                  {(claim.status || "PENDING") === "PENDING" && (
-                    <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => /* we could call update status via claimsApi.updateStatus but we rely on table component; we can just call api directly */}>
-                        Approve
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => /* reject */}>
-                        Reject
-                      </Button>
-                    </div>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { PrivateRoute } from "@/components/layout/PrivateRoute";
 
 import StudentLayout from "@/components/layout/StudentLayout";
@@ -20,43 +20,41 @@ import AdminUsersPage from "@/pages/admin/Users";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Auth — no shell, full-bleed mobile-first screens */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+    <Routes>
+      {/* Auth — no shell, full-bleed mobile-first screens */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-        {/* Student — mobile-first, bottom-tab shell */}
-        <Route
-          element={
-            <PrivateRoute requiredRole="student">
-              <StudentLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route path="/" element={<FeedPage />} />
-          <Route path="/items/:id" element={<ItemDetailPage />} />
-          <Route path="/report" element={<ReportItemPage />} />
-          <Route path="/claims" element={<MyClaimsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
+      {/* Student — mobile-first, bottom-tab shell */}
+      <Route
+        element={
+          <PrivateRoute requiredRole="student">
+            <StudentLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route path="/" element={<FeedPage />} />
+        <Route path="/items/:id" element={<ItemDetailPage />} />
+        <Route path="/report" element={<ReportItemPage />} />
+        <Route path="/claims" element={<MyClaimsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Route>
 
-        {/* Admin — desktop-optimized, brutalist console */}
-        <Route
-          element={
-            <PrivateRoute requiredRole="admin">
-              <AdminLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="claims" element={<AdminClaimsPage />} />
-          <Route path="items" element={<AdminItemsPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-        </Route>
+      {/* Admin — desktop-optimized, brutalist console */}
+      <Route
+        element={
+          <PrivateRoute requiredRole="admin">
+            <AdminLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="claims" element={<AdminClaimsPage />} />
+        <Route path="items" element={<AdminItemsPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+      </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

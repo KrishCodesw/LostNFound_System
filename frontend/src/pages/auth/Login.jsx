@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { authApi } from "@/lib/api";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -20,14 +18,8 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const data = await login(form);
-      if (data?.token) {
-        localStorage.setItem("jwt_token", data.token);
-        // Determine role from token (login function already sets user in context)
-        navigate("/", { replace: true });
-      } else {
-        setError("Login failed: no token received.");
-      }
+      await login(form);
+      // login function handles navigation and setting token
     } catch (err) {
       setError(err.message || "Couldn't sign in. Check your credentials.");
     } finally {
