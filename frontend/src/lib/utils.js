@@ -1,29 +1,22 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-/**
- * Merge Tailwind classes safely (last conflicting class wins).
- * Standard shadcn/ui helper.
- */
+// Existing cn utility
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-export function formatRelativeTime(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const diffMs = Date.now() - date.getTime();
-  const diffMin = Math.round(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.round(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
-/** Zero-padded sequential ticket number, e.g. #000042 — used on item cards. */
-export function ticketNumber(id) {
-  return `#${String(id ?? 0).padStart(6, "0")}`;
+// New formatRelativeTime utility
+export function formatRelativeTime(date) {
+  const timeMs = typeof date === "number" ? date : new Date(date).getTime();
+  const deltaSeconds = Math.round((timeMs - Date.now()) / 1000);
+  
+  const cutoffs = [60, 3600, 86400, 86400 * 7, 86400 * 30, 86400 * 365, Infinity];
+  const units = ["second", "minute", "hour", "day", "week", "month", "year"];
+  
+  const unitIndex = cutoffs.findIndex(cutoff => cutoff > Math.abs(deltaSeconds));
+  const divisor = unitIndex ? cutoffs[unitIndex - 1] : 1;
+  
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  return rtf.format(Math.floor(deltaSeconds / divisor), units[unitIndex]);
 }

@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, ImagePlus, Loader2, X, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import {
+  Camera,
+  ImagePlus,
+  Loader2,
+  X,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+} from "lucide-react";
 import { categoriesApi, itemsApi } from "@/lib/api";
 import { StepProgress } from "@/components/ui/step-progress";
 import { Button } from "@/components/ui/button";
-import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
+// FIXED IMPORTS: Separated so React can find them
+import { Input, FieldError } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"; // Assuming you have this file
+import { Label } from "@/components/ui/label"; // Assuming you have this file
 import { Select } from "@/components/ui/select";
 import { ItemTypeBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -41,7 +52,7 @@ export default function ReportItemPage() {
 
   useEffect(() => {
     categoriesApi
-      .list()
+      .getAll()
       .then((data) => setCategories(Array.isArray(data) ? data : []))
       .catch(() => setCategories([]));
   }, []);
@@ -54,7 +65,8 @@ export default function ReportItemPage() {
     const next = {};
     if (currentStep === 1) {
       if (!form.title.trim()) next.title = "Give the item a short title.";
-      if (!form.description.trim()) next.description = "A quick description helps others recognize it.";
+      if (!form.description.trim())
+        next.description = "A quick description helps others recognize it.";
     }
     if (currentStep === 2) {
       if (!form.categoryId) next.categoryId = "Pick the closest category.";
@@ -85,8 +97,6 @@ export default function ReportItemPage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      // NOTE: backend ItemController currently expects reporterId in the body
-      // rather than deriving it from the JWT — swap this once that's fixed.
       await itemsApi.reportItem({
         type: form.type,
         title: form.title.trim(),
@@ -98,7 +108,8 @@ export default function ReportItemPage() {
       setDone(true);
     } catch (err) {
       setSubmitError(
-        err?.response?.data?.message || "Couldn't submit this report. Please try again."
+        err?.response?.data?.message ||
+          "Couldn't submit this report. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -116,13 +127,19 @@ export default function ReportItemPage() {
         >
           <Check className="h-8 w-8" />
         </motion.div>
-        <h1 className="mt-5 font-display text-2xl text-ink">Logged in the ledger</h1>
+        <h1 className="mt-5 font-display text-2xl text-ink">
+          Logged in the ledger
+        </h1>
         <p className="mt-2 text-sm text-ink/55">
-          Your {form.type === "LOST" ? "lost" : "found"} item report is live. We'll notify you
-          if there's a match.
+          Your {form.type === "LOST" ? "lost" : "found"} item report is live.
+          We'll notify you if there's a match.
         </p>
         <div className="mt-8 flex w-full gap-3">
-          <Button variant="outline" className="flex-1" onClick={() => navigate("/")}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => navigate("/")}
+          >
             Back to feed
           </Button>
           <Button
@@ -146,7 +163,9 @@ export default function ReportItemPage() {
         <p className="font-mono text-xs uppercase tracking-widest text-ink/40">
           New intake
         </p>
-        <h1 className="mt-1 font-display text-3xl font-medium text-ink">Report an item</h1>
+        <h1 className="mt-1 font-display text-3xl font-medium text-ink">
+          Report an item
+        </h1>
       </header>
 
       <div className="mb-8">
@@ -178,10 +197,17 @@ export default function ReportItemPage() {
                         "flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-medium transition-colors",
                         form.type === t
                           ? "border-ink bg-ink text-paper"
-                          : "border-stone bg-white text-ink/60"
+                          : "border-stone bg-white text-ink/60",
                       )}
                     >
-                      <ItemTypeBadge type={t} className={form.type === t ? "bg-white/15 text-current border-current/30" : ""} />
+                      <ItemTypeBadge
+                        type={t}
+                        className={
+                          form.type === t
+                            ? "bg-white/15 text-current border-current/30"
+                            : ""
+                        }
+                      />
                     </button>
                   ))}
                 </div>
@@ -196,7 +222,7 @@ export default function ReportItemPage() {
                   error={errors.title}
                   onChange={(e) => updateForm({ title: e.target.value })}
                 />
-                <FieldError>{errors.title}</FieldError>
+                {errors.title && <FieldError>{errors.title}</FieldError>}
               </div>
 
               <div>
@@ -209,7 +235,9 @@ export default function ReportItemPage() {
                   error={errors.description}
                   onChange={(e) => updateForm({ description: e.target.value })}
                 />
-                <FieldError>{errors.description}</FieldError>
+                {errors.description && (
+                  <FieldError>{errors.description}</FieldError>
+                )}
               </div>
             </motion.div>
           )}
@@ -240,12 +268,16 @@ export default function ReportItemPage() {
                     </option>
                   ))}
                 </Select>
-                <FieldError>{errors.categoryId}</FieldError>
+                {errors.categoryId && (
+                  <FieldError>{errors.categoryId}</FieldError>
+                )}
               </div>
 
               <div>
                 <Label htmlFor="location">
-                  {form.type === "LOST" ? "Last seen location" : "Found location"}
+                  {form.type === "LOST"
+                    ? "Last seen location"
+                    : "Found location"}
                 </Label>
                 <Input
                   id="location"
@@ -254,7 +286,7 @@ export default function ReportItemPage() {
                   error={errors.location}
                   onChange={(e) => updateForm({ location: e.target.value })}
                 />
-                <FieldError>{errors.location}</FieldError>
+                {errors.location && <FieldError>{errors.location}</FieldError>}
               </div>
             </motion.div>
           )}
@@ -274,10 +306,16 @@ export default function ReportItemPage() {
                 <Label>Photo (optional)</Label>
                 {form.imagePreview ? (
                   <div className="relative overflow-hidden rounded-card border border-stone">
-                    <img src={form.imagePreview} alt="Preview" className="h-48 w-full object-cover" />
+                    <img
+                      src={form.imagePreview}
+                      alt="Preview"
+                      className="h-48 w-full object-cover"
+                    />
                     <button
                       type="button"
-                      onClick={() => updateForm({ imageFile: null, imagePreview: null })}
+                      onClick={() =>
+                        updateForm({ imageFile: null, imagePreview: null })
+                      }
                       className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-ink/70 text-paper"
                     >
                       <X className="h-4 w-4" />
@@ -308,21 +346,29 @@ export default function ReportItemPage() {
                 <dl className="mt-3 space-y-2 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-ink/50">Type</dt>
-                    <dd><ItemTypeBadge type={form.type} /></dd>
+                    <dd>
+                      <ItemTypeBadge type={form.type} />
+                    </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-ink/50">Title</dt>
-                    <dd className="text-right font-medium text-ink">{form.title || "—"}</dd>
+                    <dd className="text-right font-medium text-ink">
+                      {form.title || "—"}
+                    </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-ink/50">Category</dt>
                     <dd className="text-right text-ink">
-                      {categories.find((c) => String(c.id) === String(form.categoryId))?.name || "—"}
+                      {categories.find(
+                        (c) => String(c.id) === String(form.categoryId),
+                      )?.name || "—"}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-ink/50">Location</dt>
-                    <dd className="text-right text-ink">{form.location || "—"}</dd>
+                    <dd className="text-right text-ink">
+                      {form.location || "—"}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -350,8 +396,16 @@ export default function ReportItemPage() {
             <ArrowRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="flex-1"
+          >
+            {submitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
             {submitting ? "Submitting…" : "Submit report"}
           </Button>
         )}
