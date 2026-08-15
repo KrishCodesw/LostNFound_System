@@ -16,8 +16,8 @@ export default function BottomNav() {
         {navItems.map((item) => {
           const Icon = item.icon; // assign to a capitalized variable
           return (
-            <NavLink
-              key={item.to}
+          <NavLink
+              key={item.label} // CHANGED: Now uses the unique label ("Feed", "Search", etc.)
               to={item.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${

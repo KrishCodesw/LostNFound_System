@@ -39,13 +39,14 @@ export const apiFetch = async (endpoint, options = {}) => {
 
 // Auth Service
 export const authApi = {
-  // POST /api/auth/login
+  // POST /api/auth/login -> { token, email, role }
   login: (credentials) => apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   }),
 
-  // POST /api/auth/register
+  // POST /api/auth/register -> { token, email, role }
+  // Note: role is never sent by the client — the backend always assigns STUDENT.
   register: (userData) => apiFetch('/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
@@ -54,6 +55,7 @@ export const authApi = {
   // POST /api/auth/logout (if backend supports) else client-side
   logout: () => {
     localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user_role');
     // Optionally call backend to invalidate token
     return Promise.resolve();
   },
@@ -100,6 +102,49 @@ export const claimsApi = {
   updateStatus: (id, status) => apiFetch(`/claims/${id}/status`, {
     method: 'PUT',
     body: JSON.stringify({ status }),
+  }),
+};
+
+// Inventory Service (Admin-only: bulk upload & stock counts for items already sitting
+// at the Lost & Found desk, e.g. "30 calculators", "40 paper holders")
+export const inventoryApi = {
+  // GET /api/admin/inventory?search=&categoryId=&page=&size=
+  list: ({ search = '', categoryId = '', page = 0, size = 50 } = {}) => {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (categoryId) params.set('categoryId', categoryId);
+    params.set('page', String(page));
+    params.set('size', String(size));
+    return apiFetch(`/admin/inventory?${params.toString()}`);
+  },
+
+  // POST /api/admin/inventory/bulk  { items: [{ name, categoryId, quantity, location, description }], mergeDuplicates }
+  bulkUpload: (items, mergeDuplicates = true) => apiFetch('/admin/inventory/bulk', {
+    method: 'POST',
+    body: JSON.stringify({ items, mergeDuplicates }),
+  }),
+
+  // POST /api/admin/inventory
+  create: (item) => apiFetch('/admin/inventory', {
+    method: 'POST',
+    body: JSON.stringify(item),
+  }),
+
+  // PUT /api/admin/inventory/{id}
+  update: (id, item) => apiFetch(`/admin/inventory/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(item),
+  }),
+
+  // PATCH /api/admin/inventory/{id}/quantity  { mode: 'DELTA' | 'SET', value, expectedVersion }
+  adjustQuantity: (id, mode, value, expectedVersion) => apiFetch(`/admin/inventory/${id}/quantity`, {
+    method: 'PATCH',
+    body: JSON.stringify({ mode, value, expectedVersion }),
+  }),
+
+  // DELETE /api/admin/inventory/{id}
+  remove: (id) => apiFetch(`/admin/inventory/${id}`, {
+    method: 'DELETE',
   }),
 };
 

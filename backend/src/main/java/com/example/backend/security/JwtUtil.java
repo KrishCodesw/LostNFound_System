@@ -12,27 +12,29 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    private final long JWT_EXPIRATION = 1000 * 60 * 60 * 10;
+    @Value("${jwt.expiration-ms:36000000}")
+    private long jwtExpirationMs;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String extractEmail(String token) {
-        return Jwts.
-                parserBuilder().
-                setSigningKey(getSigningKey()).
-                build().
-                parseClaimsJws(token).
-                getBody().
-                getSubject();
+        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().getSubject();
     }
 
-    public String generateToken(String email) {
+    public String extractRole(String token) {
+        Object role = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
+                .parseClaimsJws(token).getBody().get("role");
+        return role == null ? null : role.toString();
+    }
+
+    public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

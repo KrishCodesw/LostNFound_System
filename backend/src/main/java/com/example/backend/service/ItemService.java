@@ -8,6 +8,7 @@ import com.example.backend.entity.User;
 import com.example.backend.repository.CategoryRepository;
 import com.example.backend.repository.ItemRepository;
 import com.example.backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -73,6 +74,7 @@ public class ItemService {
         return response;
     }
     // Get All Items
+    @Transactional()
     public List<ItemResponse> getAllItems() {
         return itemRepository.findAll().stream()
                 .map(this::mapToResponse)

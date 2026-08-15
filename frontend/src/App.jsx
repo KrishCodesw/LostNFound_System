@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import StudentLayout from "@/components/layout/StudentLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
+import { PrivateRoute } from "@/components/layout/PrivateRoute";
 
 import FeedPage from "@/pages/student/Feed";
 import ReportItemPage from "@/pages/student/ReportItem";
@@ -15,6 +16,7 @@ import RegisterPage from "@/pages/auth/Register";
 import AdminDashboardPage from "@/pages/admin/Dashboard";
 import AdminClaimsPage from "@/pages/admin/Claims";
 import AdminItemsPage from "@/pages/admin/Items";
+import AdminInventoryPage from "@/pages/admin/Inventory";
 import AdminUsersPage from "@/pages/admin/Users";
 
 export default function App() {
@@ -33,11 +35,20 @@ export default function App() {
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Admin — desktop-optimized, brutalist console */}
-      <Route path="/admin" element={<AdminLayout />}>
+      {/* Admin — desktop-optimized, brutalist console. Gated behind auth + ADMIN role;
+          the backend independently re-enforces this on every /api/admin/** call. */}
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute requiredRole="admin">
+            <AdminLayout />
+          </PrivateRoute>
+        }
+      >
         <Route index element={<AdminDashboardPage />} />
         <Route path="claims" element={<AdminClaimsPage />} />
         <Route path="items" element={<AdminItemsPage />} />
+        <Route path="inventory" element={<AdminInventoryPage />} />
         <Route path="users" element={<AdminUsersPage />} />
       </Route>
 
