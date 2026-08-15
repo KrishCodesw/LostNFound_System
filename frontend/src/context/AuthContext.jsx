@@ -4,37 +4,38 @@ import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
+function decodeToken(token) {
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    throw new Error('Invalid token format');
+  }
+  const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+  const email = payload.sub || payload.email;
+  if (!email) {
+    throw new Error('Token missing email');
+  }
+  const exp = payload.exp;
+  if (!exp || Date.now() >= exp * 1000) {
+    throw new Error('Token expired');
+  }
+  // The backend now signs the role directly into the JWT (see JwtUtil#generateToken).
+  // This is authoritative — never inferred from the email string.
+  const role = (payload.role || 'STUDENT').toLowerCase();
+  return { email, role };
+}
+
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check for token on load and set user (decode JWT)
+  // Check for token on load and restore the session from it.
   useEffect(() => {
     const token = localStorage.getItem('jwt_token');
     if (token) {
       try {
-        // Check token format
-        const parts = token.split('.');
-        if (parts.length !== 3) {
-          throw new Error('Invalid token format');
-        }
-        // Decode JWT (payload is second part)
-        const payload = JSON.parse(atob(parts[1]));
-        // The backend uses 'sub' for email in the token
-        const email = payload.sub || payload.email;
-        if (!email) {
-          throw new Error('Token missing email');
-        }
-        // Check if token expired
-        const exp = payload.exp;
-        if (!exp || Date.now() >= exp * 1000) {
-          throw new Error('Token expired');
-        }
-        // Determine role based on email (simple heuristic)
-        const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
-        setUser({ email, role });
+        setUser(decodeToken(token));
       } catch (e) {
         console.warn('Failed to parse token', e);
         localStorage.removeItem('jwt_token');
@@ -49,9 +50,9 @@ export const AuthProvider = ({ children }) => {
       const data = await authApi.login(credentials);
       if (data?.token && data.email) {
         localStorage.setItem('jwt_token', data.token);
-        const role = data.email.toLowerCase().includes('admin') ? 'admin' : 'student';
+        // Trust the role the backend returned alongside the token, not a guess.
+        const role = (data.role || 'STUDENT').toLowerCase();
         setUser({ email: data.email, role });
-        // Redirect based on role
         navigate(role === 'admin' ? '/admin' : '/', { replace: true });
         return data;
       } else {
@@ -67,9 +68,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authApi.register(userData);
       if (data?.token && data.email) {
-        localStorage.setItem('jwt_token', data.token);
-        const role = data.email.toLowerCase().includes('admin') ? 'admin' : 'student';
-        setUser({ email: data.email, role });
+        // New registrations are always STUDENT accounts (enforced server-side).
         navigate('/login', { replace: true });
         return data;
       } else {
