@@ -1,6 +1,7 @@
 package com.example.backend.exception;
 
 import com.example.backend.dto.ApiError;
+import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
