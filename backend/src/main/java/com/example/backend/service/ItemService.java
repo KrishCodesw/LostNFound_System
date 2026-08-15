@@ -74,8 +74,9 @@ public class ItemService {
         return response;
     }
     // Get All Items
+    @Transactional()
     public List<ItemResponse> getAllItems() {
-        return itemRepository.findAllWithCategory().stream()
+        return itemRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
