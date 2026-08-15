@@ -1,5 +1,5 @@
 // frontend/src/lib/api.js
-const API_BASE_URL = 'http://localhost:8080/api'; // Adjust for production deployment
+const API_BASE_URL = 'http://localhost:8086/api'; // Adjust for production deployment
 
 export const apiFetch = async (endpoint, options = {}) => {
   // Grab the JWT token from local storage (set this during your Login flow)

@@ -1,8 +1,14 @@
 package com.example.backend.entity;
 import jakarta.persistence.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import com.example.backend.state.STATUS;
 @Entity
 @Table(name = "claim_requests")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClaimRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,23 +24,6 @@ public class ClaimRequest {
 
     @Column(columnDefinition = "TEXT")
     private String proofDescription;
-    private String status;
-
-    public ClaimRequest(){}
-
-    public Long getId(){return id;}
-    public void setId(Long id){this.id=id;}
-
-    public Item getItem(){return item;}
-    public void setItem(Item item){this.item=item;}
-
-    public User getClaimant(){return claimant;}
-    public void setClaimant(User claimant){this.claimant=claimant;}
-
-    public String getProofDescription(){return proofDescription;}
-    public void setProofDescription(String proofDescription){this.proofDescription=proofDescription;}
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    private STATUS status;
 
 }

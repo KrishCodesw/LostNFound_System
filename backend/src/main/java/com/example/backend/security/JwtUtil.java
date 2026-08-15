@@ -19,7 +19,13 @@ public class JwtUtil {
     }
 
     public String extractEmail(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.
+                parserBuilder().
+                setSigningKey(getSigningKey()).
+                build().
+                parseClaimsJws(token).
+                getBody().
+                getSubject();
     }
 
     public String generateToken(String email) {

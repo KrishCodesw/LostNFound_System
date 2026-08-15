@@ -8,6 +8,7 @@ import com.example.backend.entity.User;
 import com.example.backend.repository.ClaimRequestRepository;
 import com.example.backend.repository.ItemRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.state.STATUS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,7 @@ public class ClaimRequestService {
         claim.setItem(item);
         claim.setClaimant(claimer);
         claim.setProofDescription(request.getProofDescription());
-        claim.setStatus("PENDING"); // Default status for new claims
+        claim.setStatus(STATUS.valueOf("PENDING")); // Default status for new claims
 
         // 4. Save to the database
         ClaimRequest savedClaim = claimRequestRepository.save(claim);
@@ -48,7 +49,7 @@ public class ClaimRequestService {
         response.setItemTitle(savedClaim.getItem().getTitle());
         response.setClaimantName(savedClaim.getClaimant().getName());
         response.setProofDescription(savedClaim.getProofDescription());
-        response.setStatus(savedClaim.getStatus());
+        response.setStatus(String.valueOf(savedClaim.getStatus()));
         // ... map any other fields
 
         return response;
@@ -58,7 +59,7 @@ public class ClaimRequestService {
         ClaimRequest claim = claimRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Claim not found"));
 
-        claim.setStatus(newStatus);
+        claim.setStatus(STATUS.valueOf(newStatus));
 
         if (newStatus.equalsIgnoreCase("APPROVED")) {
             Item item = claim.getItem();
@@ -76,7 +77,7 @@ public class ClaimRequestService {
         response.setItemTitle(claim.getItem().getTitle());
         response.setClaimantName(claim.getClaimant().getName());
         response.setProofDescription(claim.getProofDescription());
-        response.setStatus(claim.getStatus());
+        response.setStatus(String.valueOf(claim.getStatus()));
         return response;
     }
 }
