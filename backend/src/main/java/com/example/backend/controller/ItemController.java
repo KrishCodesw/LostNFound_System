@@ -1,22 +1,21 @@
 package com.example.backend.controller;
-import java.security.Principal;
+
+
 import com.example.backend.dto.ItemRequest;
 import com.example.backend.dto.ItemResponse;
 import com.example.backend.entity.Item;
 import com.example.backend.service.ItemService;
-import org.apache.coyote.Response;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/items")
-@CrossOrigin(origins = "http://localhost:5173")
+@AllArgsConstructor
 public class ItemController {
 
-    @Autowired
     private ItemService itemService;
 
     @PostMapping

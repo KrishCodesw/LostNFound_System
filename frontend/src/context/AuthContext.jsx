@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authApi } from '@/lib/api';
+import { authApi, tokenStorage } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -32,32 +32,40 @@ export const AuthProvider = ({ children }) => {
 
   // Check for token on load and restore the session from it.
   useEffect(() => {
-    const token = localStorage.getItem('jwt_token');
+    const token = tokenStorage.getAccessToken();
     if (token) {
       try {
         setUser(decodeToken(token));
       } catch (e) {
         console.warn('Failed to parse token', e);
-        localStorage.removeItem('jwt_token');
+        tokenStorage.clear();
         setUser(null);
       }
     }
     setLoading(false);
   }, []);
 
+  // Shared by password login, register, Google login and the silent-refresh
+  // path: stashes the access+refresh pair and updates the in-memory user.
+  function applyAuthResponse(data, { redirect } = { redirect: true }) {
+    if (!data?.token || !data.email) {
+      throw new Error('Invalid auth response');
+    }
+    tokenStorage.setTokens(data.token, data.refreshToken);
+    const role = (data.role || 'STUDENT').toLowerCase();
+    const nextUser = { email: data.email, role };
+    setUser(nextUser);
+    if (redirect) {
+      navigate(role === 'admin' ? '/admin' : '/', { replace: true });
+    }
+    return nextUser;
+  }
+
   const login = async (credentials) => {
     try {
       const data = await authApi.login(credentials);
-      if (data?.token && data.email) {
-        localStorage.setItem('jwt_token', data.token);
-        // Trust the role the backend returned alongside the token, not a guess.
-        const role = (data.role || 'STUDENT').toLowerCase();
-        setUser({ email: data.email, role });
-        navigate(role === 'admin' ? '/admin' : '/', { replace: true });
-        return data;
-      } else {
-        throw new Error('Invalid login response');
-      }
+      applyAuthResponse(data);
+      return data;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -80,9 +88,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Kicks off Google Sign-In/Sign-Up: ask the backend for the consent URL,
+  // then hand the browser off to Google. It comes back to /auth/google/callback.
+  const loginWithGoogle = async () => {
+    try {
+      const { url } = await authApi.getGoogleUrl();
+      window.location.href = url;
+    } catch (err) {
+      setError(err.message || 'Could not start Google sign-in.');
+      throw err;
+    }
+  };
+
+  // Called by the /auth/google/callback page once Google redirects back with ?code=.
+  const completeGoogleLogin = async (code) => {
+    try {
+      const data = await authApi.googleCallback(code);
+      applyAuthResponse(data);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Google sign-in failed.');
+      throw err;
+    }
+  };
+
   const logout = () => {
     authApi.logout();
-    localStorage.removeItem('jwt_token');
     setUser(null);
     navigate('/login', { replace: true });
   };
@@ -93,6 +124,8 @@ export const AuthProvider = ({ children }) => {
     error,
     login,
     register,
+    loginWithGoogle,
+    completeGoogleLogin,
     logout,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',

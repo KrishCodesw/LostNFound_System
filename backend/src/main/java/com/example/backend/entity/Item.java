@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.state.STATUS;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +30,7 @@ public class Item {
 
     private String location;
 
-    private String status;
+    private STATUS status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

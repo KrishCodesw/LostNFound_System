@@ -13,6 +13,7 @@ import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.repository.CategoryRepository;
 import com.example.backend.repository.InventoryItemRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.state.ROLE;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +46,8 @@ public class InventoryItemService {
     private User requireAdmin(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
-        if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
+
+        if (!ROLE.ADMIN.equals(user.getRole())) {
             // Defense in depth: controller/security layer should already have blocked this.
             throw new AccessDeniedException("Admin privileges required");
         }

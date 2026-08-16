@@ -9,7 +9,7 @@ import lombok.Data;
 public class RegisterRequest {
 
     @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must be at most 100 characters")
+    @Size(max = 30, message = "Name must be at most 30 characters")
     private String name;
 
     @NotBlank(message = "Email is required")
@@ -26,6 +26,4 @@ public class RegisterRequest {
     @Size(max = 20, message = "Phone must be at most 20 characters")
     private String phone;
 
-    // NOTE: no "role" field on purpose. Role is always forced to STUDENT server-side
-    // in AuthController — a client can never register themselves as ADMIN.
 }

@@ -3,17 +3,17 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.Category;
 import com.example.backend.repository.CategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
-@CrossOrigin(origins = "http://localhost:5173")
+@AllArgsConstructor
 public class CategoryController {
 
-    @Autowired
+
     private CategoryRepository categoryRepository;
 
     @GetMapping

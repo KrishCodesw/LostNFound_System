@@ -4,14 +4,16 @@ import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { GoogleButton } from "@/components/ui/google-button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -28,6 +30,17 @@ export default function LoginPage() {
       setError(err.message || "Couldn't sign in. Check your credentials.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleClick() {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle(); // redirects the browser away from this page
+    } catch (err) {
+      setError(err.message || "Couldn't start Google sign-in.");
+      setGoogleLoading(false);
     }
   }
 
@@ -98,11 +111,23 @@ export default function LoginPage() {
 
         {error && <FieldError>{error}</FieldError>}
 
-        <Button type="submit" disabled={loading} className="mt-2 w-full">
+        <Button type="submit" disabled={loading || googleLoading} className="mt-2 w-full">
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
+
+      <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-wide text-ink/35">
+        <div className="h-px flex-1 bg-ink/10" />
+        or
+        <div className="h-px flex-1 bg-ink/10" />
+      </div>
+
+      <GoogleButton
+        label={googleLoading ? "Redirecting…" : "Continue with Google"}
+        onClick={handleGoogleClick}
+        disabled={loading || googleLoading}
+      />
     </AuthShell>
   );
 }

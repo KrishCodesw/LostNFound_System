@@ -1,7 +1,6 @@
 # Node/React
 frontend/node_modules/
 frontend/dist/
-frontend/.env
 npm-debug.log*
 
 # Java/Spring Boot
@@ -12,6 +11,11 @@ backend/.classpath
 backend/.project
 *.jar
 *.war
+
+# Secrets - never commit .env files anywhere in the repo
+.env
+*.env
+!*.env.example
 
 # IDEs and OS Files
 .idea/

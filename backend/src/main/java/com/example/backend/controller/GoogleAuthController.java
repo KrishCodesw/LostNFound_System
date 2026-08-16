@@ -1,21 +1,27 @@
 package com.example.backend.controller;
 
-//import lombok.Value;
-import org.springframework.beans.factory.annotation.Value;
+import com.example.backend.dto.GoogleAuthUrlResponse;
+import com.example.backend.dto.GoogleCallbackRequest;
+import com.example.backend.service.GoogleAuthService;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/auth/google")
+@AllArgsConstructor
 public class GoogleAuthController {
 
-    @Value("spring.security.oauth2.client.registration.google.client-id")
-    private String clientId;
-    @Value("spring.security.oauth2.client.registration.google.client-secret")
-    private String clientSecret;
-    @GetMapping("callback")
-    public ResponseEntity<?> oAuth2(@RequestParam String code){
-        return null;
+    private final GoogleAuthService googleAuthService;
+
+    @GetMapping("/url")
+    public ResponseEntity<GoogleAuthUrlResponse> authUrl() {
+        return ResponseEntity.ok(new GoogleAuthUrlResponse(googleAuthService.buildConsentUrl()));
+    }
+
+    @PostMapping("/callback")
+    public ResponseEntity<?> callback(@Valid @RequestBody GoogleCallbackRequest request) {
+        return ResponseEntity.ok(googleAuthService.handleCallback(request.getCode()));
     }
 }
