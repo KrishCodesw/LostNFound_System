@@ -1,9 +1,11 @@
 package com.example.backend.entity;
+
+import com.example.backend.state.STATUS;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.example.backend.state.STATUS;
+
 @Entity
 @Table(name = "claim_requests")
 @Data
@@ -12,18 +14,20 @@ import com.example.backend.state.STATUS;
 public class ClaimRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claimant_id")
     private User claimant;
 
     @Column(columnDefinition = "TEXT")
     private String proofDescription;
-    private STATUS status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30)
+    private STATUS status;
 }

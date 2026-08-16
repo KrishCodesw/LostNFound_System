@@ -30,7 +30,9 @@ public class Item {
 
     private String location;
 
-    private STATUS status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30)
+    private STATUS status = STATUS.OPEN;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

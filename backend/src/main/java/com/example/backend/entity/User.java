@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table(name = "users")
@@ -19,20 +18,27 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Size(min = 3,message = "Please write correct name")
+
+    @Size(min = 3, message = "Please write correct name")
     private String name;
-    @Pattern(message = "invalid email address try again later",regexp = "(\\w+[+-]?\\w+)+(\\.[a-z]+)*@[a-z]{2,}(\\.[a-z]{2,})+")
+
+    @Pattern(message = "invalid email address try again later", regexp = "(\\w+[+-]?\\w+)+(\\.[a-z]+)*@[a-z]{2,}(\\.[a-z]{2,})+")
+    @Column(nullable = false, unique = true)
     private String email;
+
     private String password;
-    @Enumerated(value = EnumType.STRING)
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private ROLE role;
-    @Enumerated(value = EnumType.STRING)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_type", length = 30)
     private TypeOfAuth authType;
-    @Column(columnDefinition = "varchar",length = 10,unique = true,updatable = false)
 
-    private Long phoneNumber;
+    @Column(name = "phone_number", length = 20, unique = true, updatable = false)
+    private String phoneNumber;
 
-    @Column(length = 2048)
+    @Column(name = "google_refresh_token", length = 2048)
     private String googleRefreshToken;
-
 }

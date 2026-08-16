@@ -21,7 +21,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-
 @Service
 public class GoogleAuthService {
 
@@ -56,8 +55,6 @@ public class GoogleAuthService {
                 .queryParam("redirect_uri", redirectUri)
                 .queryParam("response_type", "code")
                 .queryParam("scope", "openid email profile")
-                // offline + consent so Google actually (re-)issues a refresh_token
-                // instead of only handing one out the very first time ever.
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")
                 .encode()
@@ -73,11 +70,24 @@ public class GoogleAuthService {
             throw new InvalidRequestException("Google did not return an email for this account");
         }
 
-        User user = userRepository.findByEmail(profile.email()).orElseGet(() -> createGoogleUser(profile));
+        User user = userRepository.findByEmail(profile.email())
+                .orElseGet(() -> createGoogleUser(profile));
+
+        boolean updated = false;
+
+        // Ensure existing users without a role get default ROLE.USER
+        if (user.getRole() == null) {
+            user.setRole(ROLE.USER);
+            updated = true;
+        }
 
         if (tokens.refreshToken() != null && !tokens.refreshToken().isBlank()) {
             user.setGoogleRefreshToken(tokens.refreshToken());
-            userRepository.save(user);
+            updated = true;
+        }
+
+        if (updated) {
+            user = userRepository.save(user);
         }
 
         return userService.buildAuthResponse(user);
@@ -89,10 +99,8 @@ public class GoogleAuthService {
         user.setEmail(profile.email());
         user.setRole(ROLE.USER);
         user.setAuthType(TypeOfAuth.GOOGLE);
-        // Google-authenticated accounts never log in with a password, but the
-        // column is non-nullable, so store an encoded, unguessable, unusable value.
         user.setPassword(passwordEncoder.encode(generateUnusablePassword()));
-        return user;
+        return userRepository.save(user); // Persist to database
     }
 
     private String generateUnusablePassword() {

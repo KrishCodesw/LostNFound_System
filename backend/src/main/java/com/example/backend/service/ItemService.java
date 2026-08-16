@@ -8,6 +8,7 @@ import com.example.backend.entity.User;
 import com.example.backend.repository.CategoryRepository;
 import com.example.backend.repository.ItemRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.state.STATUS;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -119,7 +120,7 @@ public class ItemService {
         response.setImageUrl(item.getImageUrl());
         response.setDateReported(item.getDateReported());
         response.setLocation(item.getLocation());
-        response.setStatus(item.getStatus().name());
+        response.setStatus((item.getStatus() != null) ? item.getStatus().name() : STATUS.OPEN.name());
 
         if (item.getReportedBy() != null) {
             response.setReporterName(item.getReportedBy().getName());
