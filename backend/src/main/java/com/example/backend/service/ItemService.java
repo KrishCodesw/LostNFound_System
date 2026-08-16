@@ -9,22 +9,19 @@ import com.example.backend.repository.CategoryRepository;
 import com.example.backend.repository.ItemRepository;
 import com.example.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ItemService {
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private CategoryRepository categoryRepository;
 
-    @Autowired
     private ItemRepository itemRepository;
 
     public ItemResponse reportItem(ItemRequest request, String userEmail) {
@@ -61,7 +58,7 @@ public class ItemService {
         response.setImageUrl(savedItem.getImageUrl());
         response.setDateReported(savedItem.getDateReported());
         response.setLocation(savedItem.getLocation());
-        response.setStatus(savedItem.getStatus());
+        response.setStatus(savedItem.getStatus().name());
 
         // Extract the nested names from the related entities
         if (savedItem.getReportedBy() != null) {
@@ -122,7 +119,7 @@ public class ItemService {
         response.setImageUrl(item.getImageUrl());
         response.setDateReported(item.getDateReported());
         response.setLocation(item.getLocation());
-        response.setStatus(item.getStatus());
+        response.setStatus(item.getStatus().name());
 
         if (item.getReportedBy() != null) {
             response.setReporterName(item.getReportedBy().getName());

@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class ClaimSubmitRequest {
     private Long itemId;
-    private Long claimantId; // To be replaced by JWT context later
+    private Long claimantId; // To be replaced by JWT context later // nahi samjha (krishna)
     private String proofDescription;
 }

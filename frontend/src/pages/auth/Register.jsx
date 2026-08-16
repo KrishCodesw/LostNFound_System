@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Mail, Lock, User, Check } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { GoogleButton } from "@/components/ui/google-button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   function validate() {
     const next = {};
@@ -28,20 +30,29 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      // Trim the fields before sending
       const trimmedData = {
         name: form.name.trim(),
         email: form.email.trim(),
-        password: form.password.trim()
+        password: form.password.trim(),
       };
       await register(trimmedData);
-      // register function handles navigation to login
     } catch (err) {
       setServerError(
         err.message || "Couldn't create your account. This email may already be registered, or the backend rejected the request."
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleClick() {
+    setServerError(null);
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle(); // redirects the browser away from this page
+    } catch (err) {
+      setServerError(err.message || "Couldn't start Google sign-up.");
+      setGoogleLoading(false);
     }
   }
 
@@ -118,11 +129,23 @@ export default function RegisterPage() {
 
         {serverError && <FieldError>{serverError}</FieldError>}
 
-        <Button type="submit" disabled={loading} className="mt-2 w-full">
+        <Button type="submit" disabled={loading || googleLoading} className="mt-2 w-full">
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? "Creating account…" : "Create account"}
         </Button>
       </form>
+
+      <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-wide text-ink/35">
+        <div className="h-px flex-1 bg-ink/10" />
+        or
+        <div className="h-px flex-1 bg-ink/10" />
+      </div>
+
+      <GoogleButton
+        label={googleLoading ? "Redirecting…" : "Sign up with Google"}
+        onClick={handleGoogleClick}
+        disabled={loading || googleLoading}
+      />
     </AuthShell>
   );
 }

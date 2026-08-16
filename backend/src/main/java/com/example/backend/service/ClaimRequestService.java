@@ -5,21 +5,24 @@ import com.example.backend.dto.ClaimSubmitRequest;
 import com.example.backend.entity.ClaimRequest;
 import com.example.backend.entity.Item;
 import com.example.backend.entity.User;
+import com.example.backend.map.MAP;
 import com.example.backend.repository.ClaimRequestRepository;
 import com.example.backend.repository.ItemRepository;
 import com.example.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.backend.state.STATUS;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 @Service
+@AllArgsConstructor
 public class ClaimRequestService {
 
-    @Autowired
+
     private ClaimRequestRepository claimRequestRepository;
-    @Autowired
+
     private ItemRepository itemRepository;
-    @Autowired
+
     private UserRepository userRepository;
 
     public ClaimResponse submitClaim(ClaimSubmitRequest request, String userEmail) {
@@ -37,18 +40,16 @@ public class ClaimRequestService {
         claim.setItem(item);
         claim.setClaimant(claimer);
         claim.setProofDescription(request.getProofDescription());
-        claim.setStatus("PENDING"); // Default status for new claims
+        claim.setStatus(STATUS.PENDING); // Default status for new claims
 
         // 4. Save to the database
         ClaimRequest savedClaim = claimRequestRepository.save(claim);
 
         // 5. Map to your response DTO
-        ClaimResponse response = new ClaimResponse();
-        response.setId(savedClaim.getId());
+        ClaimResponse response = MAP.map(savedClaim,ClaimResponse::new);
+        response.setItemId(savedClaim.getItem().getId());
         response.setItemTitle(savedClaim.getItem().getTitle());
         response.setClaimantName(savedClaim.getClaimant().getName());
-        response.setProofDescription(savedClaim.getProofDescription());
-        response.setStatus(savedClaim.getStatus());
         // ... map any other fields
 
         return response;
@@ -58,11 +59,11 @@ public class ClaimRequestService {
         ClaimRequest claim = claimRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Claim not found"));
 
-        claim.setStatus(newStatus);
+        claim.setStatus(STATUS.valueOf(newStatus));
 
-        if (newStatus.equalsIgnoreCase("APPROVED")) {
+        if (newStatus.equalsIgnoreCase(STATUS.APPROVED.name())) {
             Item item = claim.getItem();
-            item.setStatus("RESOLVED");
+            item.setStatus(STATUS.RESOLVED);
             itemRepository.save(item);
         }
 
@@ -70,13 +71,10 @@ public class ClaimRequestService {
     }
 
     private ClaimResponse mapToResponse(ClaimRequest claim) {
-        ClaimResponse response = new ClaimResponse();
-        response.setId(claim.getId());
+        ClaimResponse response = MAP.map(claim,ClaimResponse::new);
         response.setItemId(claim.getItem().getId());
         response.setItemTitle(claim.getItem().getTitle());
         response.setClaimantName(claim.getClaimant().getName());
-        response.setProofDescription(claim.getProofDescription());
-        response.setStatus(claim.getStatus());
         return response;
     }
 }

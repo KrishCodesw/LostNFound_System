@@ -1,75 +1,38 @@
 package com.example.backend.entity;
 
+import com.example.backend.state.ROLE;
+import com.example.backend.state.TypeOfAuth;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table(name = "users")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Size(min = 3,message = "Please write correct name")
     private String name;
+    @Pattern(message = "invalid email address try again later",regexp = "(\\w+[+-]?\\w+)+(\\.[a-z]+)*@[a-z]{2,}(\\.[a-z]{2,})+")
     private String email;
     private String password;
-    private String phone;
-    private String role;
+    @Enumerated(value = EnumType.STRING)
+    private ROLE role;
+    @Enumerated(value = EnumType.STRING)
+    private TypeOfAuth authType;
+    @Column(columnDefinition = "varchar",length = 10,unique = true,updatable = false)
 
-    public User() {
-    }
+    private Long phoneNumber;
 
-    // ID
-    public Long getId() {
-        return id;
-    }
+    @Column(length = 2048)
+    private String googleRefreshToken;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    // NAME
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    // EMAIL
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    // PASSWORD
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    // PHONE
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    // ROLE
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 }

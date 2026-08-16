@@ -1,54 +1,29 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.AuthResponse;
 import com.example.backend.dto.LoginRequest;
+import com.example.backend.dto.RefreshTokenRequest;
 import com.example.backend.dto.RegisterRequest;
-import com.example.backend.entity.User;
-import com.example.backend.repository.UserRepository;
-import com.example.backend.security.JwtUtil;
+import com.example.backend.exception.ResourceNotFoundException;
+import com.example.backend.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@AllArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final UserService userRepository;
     private final AuthenticationManager authenticationManager;
-
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
-    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already in use"));
-        }
-
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail().toLowerCase().trim());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setPhone(request.getPhone());
-        // Role is ALWAYS forced to STUDENT here. Admin accounts are provisioned out-of-band
-        // (see AdminAccountInitializer) — never through the public registration endpoint.
-        user.setRole("STUDENT");
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), user.getRole()));
+       if(!userRepository.existByEmail(request.getEmail()))throw new ResourceNotFoundException("Invalid email");
+       return ResponseEntity.ok(userRepository.register(request));
     }
 
     @PostMapping("/login")
@@ -56,9 +31,21 @@ public class AuthController {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalStateException("User vanished after authentication"));
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), user.getRole()));
+      return ResponseEntity.ok(userRepository.login(request));
+    }
+
+    // Exchanges a valid, unexpired refresh token for a brand-new access+refresh
+    // pair, revoking the presented one (rotation) so it can't be replayed.
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(userRepository.refresh(request.getRefreshToken()));
+    }
+
+    // Revokes a refresh token, ending that session. Best-effort: an already
+    // expired/unknown token still returns 204 so client-side logout never fails.
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        userRepository.logout(request.getRefreshToken());
+        return ResponseEntity.noContent().build();
     }
 }

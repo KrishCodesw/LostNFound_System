@@ -2,6 +2,8 @@ package com.example.backend.config;
 
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.state.ROLE;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,19 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-/**
- * Ensures at least one ADMIN account exists, sourced from environment variables
- * (ADMIN_EMAIL / ADMIN_PASSWORD, mapped below). This is the only supported way
- * to provision an admin — there is no public "become admin" endpoint.
- *
- * Idempotent: does nothing if the account already exists, and does nothing
- * at all if the properties are left unset (so it's safe in every environment).
- */
 @Component
 public class AdminAccountInitializer implements CommandLineRunner {
-
     private static final Logger log = LoggerFactory.getLogger(AdminAccountInitializer.class);
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -41,7 +33,7 @@ public class AdminAccountInitializer implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) {
+    public void run(@Nullable String... args) {
         if (!StringUtils.hasText(seedEmail) || !StringUtils.hasText(seedPassword)) {
             log.info("No ADMIN_EMAIL/ADMIN_PASSWORD configured — skipping admin account seeding.");
             return;
@@ -56,7 +48,7 @@ public class AdminAccountInitializer implements CommandLineRunner {
         admin.setName(seedName);
         admin.setEmail(normalizedEmail);
         admin.setPassword(passwordEncoder.encode(seedPassword));
-        admin.setRole("ADMIN");
+        admin.setRole(ROLE.ADMIN);
         userRepository.save(admin);
 
         log.info("Seeded initial ADMIN account for {}", normalizedEmail);

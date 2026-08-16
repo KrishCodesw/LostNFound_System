@@ -4,19 +4,18 @@ import java.util.Map;
 
 import com.example.backend.dto.ClaimResponse;
 import com.example.backend.dto.ClaimSubmitRequest;
-import com.example.backend.entity.ClaimRequest;
 import com.example.backend.service.ClaimRequestService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/claims")
-@CrossOrigin(origins = "http://localhost:5173")
+@AllArgsConstructor
 public class ClaimRequestController {
 
-    @Autowired
-    private ClaimRequestService claimRequestService;
+
+    private final ClaimRequestService claimRequestService;
 
     @PostMapping
     public ResponseEntity<ClaimResponse> submitClaim(

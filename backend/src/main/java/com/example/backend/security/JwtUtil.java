@@ -2,12 +2,14 @@ package com.example.backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
 @Component
+@NoArgsConstructor
 public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
@@ -20,7 +22,13 @@ public class JwtUtil {
     }
 
     public String extractEmail(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.
+                parserBuilder().
+                setSigningKey(getSigningKey()).
+                build().
+                parseClaimsJws(token).
+                getBody().
+                getSubject();
     }
 
     public String extractRole(String token) {

@@ -12,6 +12,7 @@ import ProfilePage from "@/pages/student/Profile";
 
 import LoginPage from "@/pages/auth/Login";
 import RegisterPage from "@/pages/auth/Register";
+import GoogleCallbackPage from "@/pages/auth/GoogleCallback";
 
 import AdminDashboardPage from "@/pages/admin/Dashboard";
 import AdminClaimsPage from "@/pages/admin/Claims";
@@ -25,6 +26,7 @@ export default function App() {
       {/* Auth — no shell, full-bleed mobile-first screens */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
       {/* Student — mobile-first, bottom-tab shell */}
       <Route element={<StudentLayout />}>
